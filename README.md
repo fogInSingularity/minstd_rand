@@ -25,13 +25,31 @@ size_t points_inside_cirl = 0;
 
 std::minstd_rand rgen{rseed};
 std::uniform_real_distribution<float> udistr{0.0, 1.0};
-for (size_t i = 0; i < kIters; i++) {
-    float x = udistr(rgen);
-    float y = udistr(rgen);
-    if (x * x + y * y <= 1) {
-        points_inside_cirl++;
+
+constexpr size_t vec_size = 8;
+constexpr size_t chuck = 10'000;
+constexpr size_t sub_iters = kIters / chuck;
+
+float* val_ptr = new float[2 * chuck];
+
+for (size_t outer_ind = 0; outer_ind < sub_iters; outer_ind++) {
+    for (size_t i = 0; i < 2 * chuck; i++) {
+        val_ptr[i] = udistr(rgen);
+    }
+
+    for (size_t i = 0; i < 2 * chuck; i += 2 * vec_size) {
+        Vec8x32f vec_x{&val_ptr[i]};
+        Vec8x32f vec_y{&val_ptr[i + vec_size]};
+
+        Vec8x32f sqr = vec_x * vec_x + vec_y * vec_y;
+        Vec8x32f one_vec = Vec8x32f{1.0f};
+
+        uint32_t cmp_mask = sqr <= one_vec;
+        points_inside_cirl += CountOnes(cmp_mask);
     }
 }
+
+delete[] val_ptr;
 
 float pi = points_inside_cirl / total_num_points;
 ```
@@ -78,24 +96,17 @@ float pi = points_inside_cirl / total_num_points;
 | os | Linux fedora-41 kernel 6.14.3 |
 | compiler | gcc 14.2.1 | 
 | compiler options | -O2 -march=native |
-| `kIters` | 10^9 | 
+| `kIters` | 10^8 | 
 
 ### Benchmarking results
 
-for benchmarking i used hyperfine:
+time in seconds:
 
-```bash
-$ hyperfine -w 5 -r 20 "./build/minstd_rand >> log"
-Benchmark 1: ./build/minstd_rand >> log
-  Time (mean ± σ):      3.124 s ±  0.064 s    [User: 23.151 s, System: 0.019 s]
-  Range (min … max):    3.006 s …  3.238 s    20 runs
-```
+| | | | | |
+|-|-|-|-|-|
+| threads | 1    | 2    | 4    | 8    |  
+| naive   | 0.86 | 0.90 | 0.98 | 1.17 |
+| vec     | 0.15 | 0.16 | 0.17 | 0.30 |
+| speedup | x5.7 | x5.6 | x5.8 | x3.9 |
 
-```bash
-$ hyperfine -w 5 -r 20 "./build/minstd_rand >> log"
-Benchmark 1: ./build/minstd_rand >> log
-  Time (mean ± σ):     11.921 s ±  0.283 s    [User: 88.794 s, System: 0.066 s]
-  Range (min … max):   11.640 s … 12.927 s    20 runs
-```
-
-`rnd::minstd_rand` faster than `std::minstd_rand` faster by 3.8 times on this benchmark
+`rng::minstd_rand` faster than `std::minstd_rand` from x3.9 to x5.8 (depending on number of threads)
