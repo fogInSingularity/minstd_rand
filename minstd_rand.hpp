@@ -48,7 +48,7 @@ class minstd_rand {
         size_t full_iters = num / n_ints;
         size_t rem_iters = num % n_ints;
 
-        constexpr float norm_mul = 1 / static_cast<float>(max() - min());
+        constexpr float norm_mul = 1 / static_cast<float>(max() - min() + 1);
 
         Vec4x64u state_vec_lo{&lstate[0]};
         Vec4x64u state_vec_hi{&lstate[n_ints / 2]};

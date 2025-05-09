@@ -92,7 +92,7 @@ float pi = points_inside_cirl / total_num_points;
 | | |
 |-|-|
 | cpu architecture | x86-64 |
-| cpu | AMD Ryzen 5 3500u (Zen+) |
+| cpu | AMD Ryzen 5 3500u (Zen+): 4 cores, 8 threads |
 | os | Linux fedora-41 kernel 6.14.3 |
 | compiler | gcc 14.2.1 | 
 | compiler options | -O2 -march=native |
@@ -109,4 +109,4 @@ time in seconds:
 | vec     | 0.15 | 0.16 | 0.17 | 0.30 |
 | speedup | x5.7 | x5.6 | x5.8 | x3.9 |
 
-`rng::minstd_rand` faster than `std::minstd_rand` from x3.9 to x5.8 (depending on number of threads)
+`rnd::minstd_rand` faster than `std::minstd_rand` from x3.9 to x5.8 (depending on number of threads). When run on 8 threads, increase is only x3.9 times because of Hyper Threading: 2 threads use 1 physical core.
