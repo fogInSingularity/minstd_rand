@@ -167,7 +167,8 @@ inline uint32_t CountOnes(uint32_t val) {
     return std::bit_cast<uint32_t>(_mm_popcnt_u32(val));
 }
 
-template <typename FromT, typename ToT>
+// FromT is deduced by compiler
+template <typename ToT, typename FromT>
 ToT VecBitCast(FromT vec);
 
 template <>
@@ -184,7 +185,8 @@ Vec8x32f VecBitCast(Vec8x32u vec) {
     };
 }
 
-template <typename FromT, typename ToT>
+// FromT is deduced by compiler
+template <typename ToT, typename FromT>
 ToT VecValueCast(FromT vec);
 
 template <>

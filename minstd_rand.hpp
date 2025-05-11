@@ -61,7 +61,7 @@ class minstd_rand {
             // set gen val
             Vec8x32u res_vec{};
             res_vec.Reduce2u64Tou32(state_vec_lo, state_vec_hi);    
-            auto fvec = VecValueCast<Vec8x32u, Vec8x32f>(res_vec);
+            auto fvec = VecValueCast<Vec8x32f>(res_vec);
             fvec = fvec * norm_vec;
 
             fvec.Store(&gen_val[j * n_ints]);
